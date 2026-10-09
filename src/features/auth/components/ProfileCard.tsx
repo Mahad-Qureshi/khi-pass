@@ -1,0 +1,24 @@
+'use client';
+
+import { Avatar, Typography, Alert } from '@mui/material';
+import { styled } from '@mui/material/styles';
+import { AuthShell } from './AuthShell';
+import { LogoutButton } from './LogoutButton';
+
+const Details = styled('div')(({ theme }) => ({ display: 'grid', gap: theme.spacing(2) }));
+function safeAvatar(value: string | null) {
+    if (!value) return undefined;
+    try { const url = new URL(value); return url.protocol === 'https:' && !url.username && !url.password ? url.toString() : undefined; }
+    catch { return undefined; }
+}
+export function ProfileCard({ displayName, email, avatar, unavailable }: { displayName: string | null; email: string | null; avatar: string | null; unavailable: boolean }) {
+    return <AuthShell title="Your profile" description="Welcome to KHI PASS.">
+        <Details>
+            {unavailable && <Alert severity="warning">Your profile details are temporarily unavailable.</Alert>}
+            <Avatar src={safeAvatar(avatar)} alt={displayName ?? 'Profile avatar'}>{(displayName ?? email ?? '?').slice(0, 1).toUpperCase()}</Avatar>
+            <Typography variant="h6" component="h2">{displayName ?? 'KHI PASS member'}</Typography>
+            {email && <Typography color="text.secondary">{email}</Typography>}
+            <LogoutButton />
+        </Details>
+    </AuthShell>;
+}

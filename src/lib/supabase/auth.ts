@@ -1,6 +1,7 @@
 import 'server-only';
 
 import { isAuthSessionMissingError, type User } from '@supabase/supabase-js';
+import { connection } from 'next/server';
 
 import { createClient } from './server';
 
@@ -26,6 +27,8 @@ export class AuthenticationVerificationError extends Error {
 
 // Never cache this result across requests or use the cookie's embedded user as identity.
 export async function getAuthenticatedUser(): Promise<User | null> {
+    // Supabase checks session expiry against the current time; identity must run per request.
+    await connection();
     const supabase = await createClient();
     const { data, error } = await supabase.auth.getUser();
 

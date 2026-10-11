@@ -11,6 +11,17 @@ body {
   margin: 0;
 }
 
+.public-main { min-height: 100svh; padding-bottom: calc(64px + env(safe-area-inset-bottom)); }
+.public-loading { min-height: 100svh; }
+.skip-link {
+  position: absolute; z-index: 2000; top: 8px; left: 8px; padding: 8px 12px;
+  background: var(--mui-palette-background-paper); color: var(--mui-palette-text-primary);
+  transform: translateY(-150%);
+}
+.skip-link:focus-visible { transform: translateY(0); outline: 2px solid var(--mui-palette-secondary-main); }
+@media (min-width: 900px) { .public-main { padding-bottom: 0; } }
+@media (prefers-reduced-motion: reduce) { .skip-link { transition: none; } }
+
 a {
   color: inherit;
   text-decoration: none;

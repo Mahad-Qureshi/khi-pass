@@ -9,6 +9,7 @@
     "lint": "eslint",
     "test:db:local": "node --test --test-concurrency=1 supabase/tests/local-verification.test.mjs",
     "test:auth": "node --experimental-strip-types --test src/features/auth/tests/auth.test.mjs",
+    "test:discovery": "node --experimental-strip-types --test src/features/discovery/tests/filters.test.mjs",
     "test:auth:local": "node src/features/auth/tests/local-auth-flow.mjs"
   },
   "dependencies": {

@@ -876,6 +876,8 @@ export type Database = {
       get_drop_availability: { Args: { p_drop_id: string }; Returns: Json }
       get_merchant_contact: { Args: { p_merchant_id: string }; Returns: Json }
       get_my_pass: { Args: { p_claim_id: string }; Returns: Json }
+      get_my_pass_details: { Args: { p_claim_id: string }; Returns: Json }
+      list_my_passes: { Args: { p_limit?: number; p_offset?: number }; Returns: Json }
       get_shared_plan: { Args: { p_share_id: string }; Returns: Json }
       join_shared_plan: {
         Args: { p_nickname: string; p_share_id: string }

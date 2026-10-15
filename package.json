@@ -8,6 +8,9 @@
     "start": "next start",
     "lint": "eslint",
     "test:db:local": "node --test --test-concurrency=1 supabase/tests/local-verification.test.mjs",
+    "seed:demo:local": "node supabase/demo/local.mjs",
+    "test:demo:local": "node --test supabase/demo/integration.test.mjs",
+    "test:ui:local": "node supabase/demo/ui-verification.mjs",
     "test:auth": "node --experimental-strip-types --test src/features/auth/tests/auth.test.mjs",
     "test:discovery": "node --experimental-strip-types --test src/features/discovery/tests/filters.test.mjs",
     "test:auth:local": "node src/features/auth/tests/local-auth-flow.mjs"

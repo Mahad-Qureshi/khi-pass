@@ -3,6 +3,7 @@ import Typography from '@mui/material/Typography';
 import { styled } from '@mui/material/styles';
 import Link from '@/components/common/Link';
 import type { ExperienceDto } from '../types';
+import { FavoriteButton } from '@/features/plans/components/FavoriteButton';
 
 const Card = styled('article')(({ theme }) => ({
   overflow: 'hidden', border: `1px solid ${theme.palette.divider}`,
@@ -19,7 +20,7 @@ const TitleLink = styled(Link)(({ theme }) => ({
   '&:focus-visible': { outline: `2px solid ${theme.palette.secondary.main}`, outlineOffset: theme.spacing(0.5) },
 }));
 
-export function ExperienceCard({ experience }: { experience: ExperienceDto }) {
+export function ExperienceCard({ experience, saved = false, signedIn = false }: { experience: ExperienceDto; saved?: boolean; signedIn?: boolean }) {
   return <Card>
     <ImageArea role="img" aria-label="Image not available">KHI PASS</ImageArea>
     <Body>
@@ -27,6 +28,7 @@ export function ExperienceCard({ experience }: { experience: ExperienceDto }) {
       <Title><TitleLink href={`/discover/${experience.slug}`}>{experience.title}</TitleLink></Title>
       <Typography variant="body2" color="text.secondary">{experience.venue}</Typography>
       <Typography variant="body1">From Rs {experience.price.toLocaleString('en-PK')}</Typography>
+      <FavoriteButton id={experience.id} saved={saved} signedIn={signedIn} destination={`/discover/${experience.slug}`} />
     </Body>
   </Card>;
 }

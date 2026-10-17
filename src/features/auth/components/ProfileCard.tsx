@@ -20,6 +20,8 @@ export function ProfileCard({ displayName, email, avatar, unavailable, merchantA
             <Typography variant="h6" component="h2">{displayName ?? 'KHI PASS member'}</Typography>
             {email && <Typography color="text.secondary">{email}</Typography>}
             <Button component={Link} href="/passes" variant="outlined">My PASSes</Button>
+            <Button component={Link} href="/favorites" variant="outlined">Saved experiences</Button>
+            <Button component={Link} href="/plans" variant="outlined">My outing plans</Button>
             {merchantAccess && <Button component={Link} href="/merchant/redeem" variant="outlined">Redeem a PASS</Button>}
             <LogoutButton />
         </Details>

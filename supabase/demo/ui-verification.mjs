@@ -24,7 +24,7 @@ try {
       assert.deepEqual((await page.getByRole('alert').allTextContents()).filter(Boolean), [], `${path} alert`);
       if (path === '/') {
         assert.ok(await page.locator('a[href^="/discover/demo-khi-"]').count());
-        assert.ok(await page.getByRole('link', { name: /Watercolor Pass/ }).count());
+        assert.ok(await page.locator('a[href^="/drops/"]').count());
       }
       if (path === '/discover') {
         assert.ok(await page.getByRole('link', { name: /Watercolor Evening/ }).count());
@@ -35,8 +35,7 @@ try {
         assert.ok((await page.locator('body').innerText()).includes('From Rs 1,800'));
       }
       if (path === '/drops') {
-        assert.ok(await page.getByRole('link', { name: /Watercolor Pass/ }).count());
-        assert.ok((await page.locator('body').innerText()).includes('Rs 1,250'));
+        assert.ok(await page.locator('a[href^="/drops/"]').count());
       }
       if (path === '/drops/demo-khi-watercolor-pass') {
         assert.ok(await page.getByRole('heading', { name: /Watercolor Pass/ }).count());

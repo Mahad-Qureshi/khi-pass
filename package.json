@@ -12,6 +12,8 @@
     "test:plans:local": "node --test --test-concurrency=1 supabase/tests/plans-flow.test.mjs",
     "test:plans:browser": "node supabase/tests/plans-browser.mjs",
     "test:passes:browser": "node supabase/tests/pass-browser.mjs",
+    "test:merchant:local": "node --test --test-concurrency=1 supabase/tests/merchant-flow.test.mjs",
+    "test:merchant:browser": "node supabase/tests/merchant-browser.mjs",
     "seed:demo:local": "node supabase/demo/local.mjs",
     "test:demo:local": "node --test supabase/demo/integration.test.mjs",
     "test:ui:local": "node supabase/demo/ui-verification.mjs",

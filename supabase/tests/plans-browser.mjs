@@ -59,7 +59,7 @@ try {
     await page.waitForURL(/\/plans\/[0-9a-f-]{36}$/);
     await page.getByText('No published experiences in this plan yet').waitFor();
     await page.getByLabel('Add a published experience').click();
-    await page.getByRole('option', { name: /Watercolor Evening/ }).click({ force: true });
+    await page.getByRole('option', { name: /Watercolor Evening/ }).click();
     await page.getByRole('button', { name: 'Add', exact: true }).click();
     await page.getByRole('link', { name: /Watercolor Evening/ }).waitFor();
     await page.getByRole('button', { name: 'Share plan' }).click();
@@ -92,11 +92,14 @@ try {
     assert.equal(expectedTransportConsoleErrors, 0);
     await guest.unrouteAll();
     await guest.getByRole('button', { name: 'Join to vote' }).click();
-    await guest.getByRole('button', { name: 'Yes', exact: true }).waitFor();
+    await guest.getByRole('button', { name: 'Yes', exact: true }).waitFor().catch(async () => {
+      throw new Error(`Voting controls missing after join: ${(await guest.locator('body').innerText()).slice(0, 1000)}`);
+    });
     const participantCookie = (await guest.context().cookies(origin + shareHref)).find(cookie => cookie.name === `khi_plan_${shareHref.split('/').at(-1)}`);
     assert.ok(participantCookie);
     assert.equal(participantCookie.httpOnly, true);
-    assert.equal(participantCookie.secure, true);
+    // The local browser suite runs next dev over HTTP; production sets Secure.
+    assert.equal(participantCookie.secure, false);
     assert.equal(participantCookie.sameSite, 'Lax');
     assert.equal(participantCookie.path, shareHref);
     assert.ok(participantCookie.expires > Date.now() / 1000 + 29 * 86400);

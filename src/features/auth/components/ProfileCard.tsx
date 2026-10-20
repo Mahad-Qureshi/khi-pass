@@ -22,6 +22,7 @@ export function ProfileCard({ displayName, email, avatar, unavailable, merchantA
             <Button component={Link} href="/passes" variant="outlined">My PASSes</Button>
             <Button component={Link} href="/favorites" variant="outlined">Saved experiences</Button>
             <Button component={Link} href="/plans" variant="outlined">My outing plans</Button>
+            {merchantAccess && <Button component={Link} href="/merchant" variant="outlined">Merchant dashboard</Button>}
             {merchantAccess && <Button component={Link} href="/merchant/redeem" variant="outlined">Redeem a PASS</Button>}
             <LogoutButton />
         </Details>

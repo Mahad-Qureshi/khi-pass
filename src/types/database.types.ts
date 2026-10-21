@@ -833,6 +833,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      is_platform_admin: { Args: Record<PropertyKey, never>; Returns: boolean }
       admin_create_merchant: {
         Args: {
           p_business_name: string

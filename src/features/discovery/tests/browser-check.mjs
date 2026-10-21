@@ -7,13 +7,15 @@ import { pathToFileURL } from 'node:url';
 const cache = join(process.env.LOCALAPPDATA, 'npm-cache', '_npx');
 const runner = readdirSync(cache).map((entry) => join(cache, entry, 'node_modules', 'playwright', 'index.mjs')).find(existsSync);
 assert.ok(runner, 'Playwright is not cached. Run npx.cmd --yes --package=playwright -- playwright --version first.');
+const origin = process.env.KHI_LOCAL_UI_ORIGIN ?? 'http://localhost:3000';
+assert.ok(/^http:\/\/(localhost|127\.0\.0\.1):\d+$/.test(origin), 'Browser check requires a local app');
 const { chromium } = await import(pathToFileURL(runner).href);
 const browser = await chromium.launch({ executablePath: 'C:/Program Files/Google/Chrome/Application/chrome.exe', headless: true });
 try {
   const page = await browser.newPage();
   const appErrors = [];
   page.on('pageerror', (error) => appErrors.push(error.message));
-  await page.goto('http://localhost:3000/');
+  await page.goto(origin + '/');
   await page.setViewportSize({ width: 390, height: 844 });
   assert.equal(await page.getByRole('navigation', { name: 'Mobile navigation' }).isVisible(), true);
   assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth), true);
@@ -35,7 +37,7 @@ try {
   assert.equal(await page.getByLabel('Budget').inputValue(), 'under-2000');
   await page.getByRole('button', { name: 'Explore Karachi' }).click();
   await page.waitForURL('**/discover?when=weekend&budget=under-2000');
-  await page.goto('http://localhost:3000/discover?when=invalid&budget=under-2000');
+  await page.goto(origin + '/discover?when=invalid&budget=under-2000');
   await page.waitForURL('**/discover?budget=under-2000');
   assert.equal(await page.getByLabel('When').inputValue(), '');
   assert.equal(await page.getByLabel('Budget').inputValue(), 'under-2000');

@@ -9,6 +9,14 @@ html {
 body {
   min-height: 100vh;
   margin: 0;
+  background: var(--mui-palette-background-default);
+  color: var(--mui-palette-text-primary);
+}
+
+:focus-visible { outline: 2px solid var(--mui-palette-primary-main); outline-offset: 2px; }
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-space-grotesk), var(--font-inter), sans-serif;
 }
 
 .public-main { min-height: 100svh; padding-bottom: calc(64px + env(safe-area-inset-bottom)); }
@@ -21,6 +29,9 @@ body {
 .skip-link:focus-visible { transform: translateY(0); outline: 2px solid var(--mui-palette-secondary-main); }
 @media (min-width: 900px) { .public-main { padding-bottom: 0; } }
 @media (prefers-reduced-motion: reduce) { .skip-link { transition: none; } }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { scroll-behavior: auto !important; animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+}
 
 a {
   color: inherit;

@@ -67,8 +67,20 @@ try {
     assert.equal(overviewOverflow.width <= width, true, `Overview overflow ${width}px: ${JSON.stringify(overviewOverflow)}`);
     await page.getByRole('link', { name: 'Venues', exact: true }).click();
     await page.getByRole('link', { name: 'Create venue' }).click();
+    const beforeInvalid = await service.from('venues').select('id', { count: 'exact', head: true }).eq('merchant_id', merchant.id);
+    assert.equal(beforeInvalid.error, null, beforeInvalid.error?.message);
     await page.getByRole('button', { name: 'Save venue' }).click();
-    await page.getByText('String must contain at least 1 character').first().waitFor();
+    for (const name of ['name', 'slug', 'address']) {
+      const field = page.locator(`[name="${name}"][aria-invalid="true"]`);
+      await field.waitFor();
+      const helperId = await field.getAttribute('aria-describedby');
+      assert.ok(helperId, `${name} must link to an error message`);
+      assert.ok((await page.locator(`[id="${helperId}"]`).innerText()).trim(), `${name} error message must be visible`);
+    }
+    assert.equal(page.url().endsWith('/venues/new'), true, 'Invalid venue must stay on the editor');
+    const afterInvalid = await service.from('venues').select('id', { count: 'exact', head: true }).eq('merchant_id', merchant.id);
+    assert.equal(afterInvalid.error, null, afterInvalid.error?.message);
+    assert.equal(afterInvalid.count, beforeInvalid.count, 'Invalid venue must not persist');
     const slug = `phase6-browser-${randomUUID()}`;
     await page.getByLabel('Venue name').fill(`Local browser venue ${width}`);
     await page.getByLabel('URL slug').fill(slug);

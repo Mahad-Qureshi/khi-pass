@@ -1,4 +1,4 @@
-// LOCAL ONLY. Run against a local-configured app on port 3101.
+// LOCAL ONLY. Run against a local-configured app.
 import assert from 'node:assert/strict';
 import { createHash, randomBytes, randomUUID } from 'node:crypto';
 import { readFileSync, existsSync, readdirSync } from 'node:fs';
@@ -10,10 +10,10 @@ import { createClient } from '@supabase/supabase-js';
 const fingerprint = createHash('sha256').update(readFileSync('.env.local')).digest('hex');
 assert.equal(existsSync('supabase/.temp/project-ref'), false, 'Refusing linked workspace');
 const origin = process.env.KHI_LOCAL_UI_ORIGIN;
-assert.ok(origin && /^http:\/\/(localhost|127\.0\.0\.1):3101$/.test(origin), 'Use local UI port 3101');
+assert.ok(origin && /^http:\/\/(localhost|127\.0\.0\.1):[1-9]\d{0,4}$/.test(origin) && Number(new URL(origin).port) <= 65535, 'Use a local UI origin with a valid port');
 const dockerPath = join(process.env.LOCALAPPDATA, 'Programs', 'DockerDesktop', 'resources', 'bin', 'docker.exe');
 const env = { ...process.env, PATH: dirname(dockerPath) + delimiter + process.env.PATH, DOCKER_CONTEXT: 'desktop-linux' };
-const output = spawnSync(process.execPath, ['node_modules/supabase/dist/supabase.js', 'status', '-o', 'json'], { env, encoding: 'utf8', timeout: 30000 });
+const output = spawnSync(process.execPath, ['node_modules/supabase/dist/supabase.js', 'status', '-o', 'json'], { env, encoding: 'utf8', timeout: 120000 });
 assert.equal(output.status, 0, 'Start local Supabase first');
 const local = JSON.parse(output.stdout.slice(output.stdout.indexOf('{')));
 assert.equal(local.API_URL, 'http://127.0.0.1:54321');
@@ -29,15 +29,35 @@ async function makeUser() {
   const created = await ok(service.auth.admin.createUser({ email, password, email_confirm: true }));
   users.push(created.user.id); return { email, password };
 }
+async function checkShell(page, width) {
+  const header = page.getByRole('banner');
+  const mobile = page.locator('nav[aria-label="Mobile navigation"]');
+  const primary = page.locator('nav[aria-label="Primary navigation"]');
+  assert.equal(await header.count(), 1, 'Public page must have one header');
+  assert.equal(await mobile.count(), 1, 'Public page must have one mobile navigation');
+  assert.equal(await primary.count(), 1, 'Public page must have one primary navigation');
+  assert.equal(await page.locator('main#main-content').count(), 1, 'Public page must have one main region');
+  assert.equal(await mobile.isVisible(), width < 900);
+  assert.equal(await primary.isVisible(), width >= 900);
+  if (width < 900) {
+    const spacing = await page.evaluate(() => ({
+      main: parseFloat(getComputedStyle(document.querySelector('#main-content')).paddingBottom),
+      nav: document.querySelector('nav[aria-label="Mobile navigation"]').getBoundingClientRect().bottom,
+    }));
+    assert.ok(spacing.main >= 72, 'Main content must clear the mobile navigation and safe area');
+    assert.equal(spacing.nav, 844, 'Mobile navigation must reach the viewport bottom');
+  }
+  assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true, `Shell overflow at ${width}px`);
+}
 let browser;
 try {
   browser = await chromium.launch({ executablePath: 'C:/Program Files/Google/Chrome/Application/chrome.exe', headless: true });
   const errors = [];
-  for (const width of [390, 1280]) {
+  for (const width of [390, 768, 1280]) {
     console.log(`Checking ${width}px viewport`);
     const owner = await makeUser();
     const context = await browser.newContext({ viewport: { width, height: 844 } });
-    const page = await context.newPage(); page.setDefaultTimeout(30000);
+    const page = await context.newPage(); page.setDefaultTimeout(30000); page.setDefaultNavigationTimeout(120000);
     page.on('pageerror', error => errors.push(`${width}: ${error.message}`));
     page.on('console', message => { if (message.type() === 'error') errors.push(`${width}: ${message.text()}`); });
     await page.goto(origin + '/favorites');
@@ -46,6 +66,11 @@ try {
     await page.getByLabel('Password').fill(owner.password);
     await page.getByRole('button', { name: 'Sign in', exact: true }).click();
     await page.waitForURL('**/favorites');
+    await page.getByText('No published saved experiences yet').waitFor();
+    await page.goto(origin + '/plans');
+    await page.getByLabel('Plan title').waitFor();
+    await checkShell(page, width);
+    await page.goto(origin + '/favorites');
     await page.getByText('No published saved experiences yet').waitFor();
     await page.goto(origin + '/discover/demo-khi-watercolor-evening');
     await page.getByRole('button', { name: 'Save experience' }).click();
@@ -66,6 +91,7 @@ try {
     const shareHref = await page.locator('a[href^="/plans/share/"]').getAttribute('href');
     assert.match(shareHref, /^\/plans\/share\/[a-f0-9]{64}$/);
     const guest = await (await browser.newContext({ viewport: { width, height: 844 } })).newPage();
+    guest.setDefaultNavigationTimeout(120000);
     let failedJoinRequest = false, expectedTransportConsoleErrors = 1;
     guest.on('pageerror', error => errors.push(`${width} guest: ${error.message}`));
     guest.on('console', message => {
@@ -98,8 +124,7 @@ try {
     const participantCookie = (await guest.context().cookies(origin + shareHref)).find(cookie => cookie.name === `khi_plan_${shareHref.split('/').at(-1)}`);
     assert.ok(participantCookie);
     assert.equal(participantCookie.httpOnly, true);
-    // The local browser suite runs next dev over HTTP; production sets Secure.
-    assert.equal(participantCookie.secure, false);
+    assert.equal(participantCookie.secure, true, 'Production share cookies must be Secure');
     assert.equal(participantCookie.sameSite, 'Lax');
     assert.equal(participantCookie.path, shareHref);
     assert.ok(participantCookie.expires > Date.now() / 1000 + 29 * 86400);
@@ -127,7 +152,13 @@ try {
   assert.deepEqual(errors, []);
   console.log('No browser runtime or hydration errors');
 } finally {
-  if (browser) await browser.close();
-  for (const id of users) await service.auth.admin.deleteUser(id);
-  assert.equal(createHash('sha256').update(readFileSync('.env.local')).digest('hex'), fingerprint);
+  try {
+    if (browser) await browser.close();
+  } finally {
+    for (const id of users) {
+      const removed = await service.auth.admin.deleteUser(id);
+      assert.equal(removed.error, null, removed.error?.message);
+    }
+    assert.equal(createHash('sha256').update(readFileSync('.env.local')).digest('hex'), fingerprint);
+  }
 }

@@ -2,7 +2,6 @@ import { Suspense } from 'react';
 import { redirect } from 'next/navigation';
 import { Alert, Typography } from '@mui/material';
 import Link from '@/components/common/Link';
-import { AppShell } from '@/components/shell/AppShell';
 import { AuthenticationRequiredError, requireAuthenticatedUser } from '@/lib/supabase/auth';
 import { loginPath } from '@/features/auth/redirect';
 import { myPlans } from '@/features/plans/data';
@@ -20,4 +19,4 @@ async function Content() {
       {plans.map(plan => <article key={plan.id}><Link href={`/plans/${plan.id}`}>{plan.title}</Link> · {plan.status}</article>)}
     </PlansStack>;
 }
-export default function Page() { return <Suspense fallback={<p role="status">Loading plans…</p>}><AppShell signedIn><Content /></AppShell></Suspense>; }
+export default function Page() { return <Suspense fallback={<p role="status">Loading plans…</p>}><Content /></Suspense>; }

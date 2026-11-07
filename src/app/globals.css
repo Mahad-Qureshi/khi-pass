@@ -19,7 +19,7 @@ h1, h2, h3, h4, h5, h6 {
   font-family: var(--font-space-grotesk), var(--font-inter), sans-serif;
 }
 
-.public-main { min-height: 100svh; padding-bottom: calc(64px + env(safe-area-inset-bottom)); }
+.public-main { min-height: 100svh; padding-bottom: calc(88px + env(safe-area-inset-bottom)); }
 .public-loading { min-height: 100svh; }
 .skip-link {
   position: absolute; z-index: 2000; top: 8px; left: 8px; padding: 8px 12px;

@@ -2,7 +2,6 @@ import { Suspense } from 'react';
 import { redirect } from 'next/navigation';
 import { Alert, Typography } from '@mui/material';
 import Link from '@/components/common/Link';
-import { AppShell } from '@/components/shell/AppShell';
 import { AuthenticationRequiredError, requireAuthenticatedUser } from '@/lib/supabase/auth';
 import { loginPath } from '@/features/auth/redirect';
 import { myFavoriteIds, publicExperiences } from '@/features/plans/data';
@@ -19,4 +18,4 @@ async function Content() {
       {experiences.map(item => <article key={item.id}><Typography variant="h6" component="h2"><Link href={`/discover/${item.slug}`}>{item.title}</Link></Typography><FavoriteButton id={item.id} saved signedIn destination="/favorites" /></article>)}
     </PlansStack>;
 }
-export default function Page() { return <Suspense fallback={<p role="status">Loading saved experiences…</p>}><AppShell signedIn><Content /></AppShell></Suspense>; }
+export default function Page() { return <Suspense fallback={<p role="status">Loading saved experiences…</p>}><Content /></Suspense>; }

@@ -2,7 +2,6 @@ import { Suspense } from 'react';
 import { notFound, redirect } from 'next/navigation';
 import { Alert, Typography } from '@mui/material';
 import Link from '@/components/common/Link';
-import { AppShell } from '@/components/shell/AppShell';
 import { AuthenticationRequiredError, requireAuthenticatedUser } from '@/lib/supabase/auth';
 import { loginPath } from '@/features/auth/redirect';
 import { myPlan, publicExperienceOptions } from '@/features/plans/data';
@@ -30,4 +29,4 @@ async function Content({ params }: Props) {
       <Link href="/plans">Back to plans</Link>
     </PlansStack>;
 }
-export default function Page(props: Props) { return <Suspense fallback={<p role="status">Loading plan…</p>}><AppShell signedIn><Content {...props} /></AppShell></Suspense>; }
+export default function Page(props: Props) { return <Suspense fallback={<p role="status">Loading plan…</p>}><Content {...props} /></Suspense>; }
